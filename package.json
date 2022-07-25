@@ -1,0 +1,16 @@
+{
+  "name": "make-bundler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest",
+    "debug": "tsc && node ./dist/debug.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vitest": "^0.18.0"
+  }
+}

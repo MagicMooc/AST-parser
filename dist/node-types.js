@@ -1,0 +1,33 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FunctionType = exports.NodeType = void 0;
+var NodeType;
+(function (NodeType) {
+    NodeType["Program"] = "Program";
+    NodeType["VariableDeclaration"] = "VariableDeclaration";
+    NodeType["FunctionDeclaration"] = "FunctionDeclaration";
+    NodeType["Identifier"] = "Identifier";
+    NodeType["BlockStatement"] = "BlockStatement";
+    NodeType["ExpressionStatement"] = "ExpressionStatement";
+    NodeType["ReturnStatement"] = "ReturnStatement";
+    NodeType["CallExpression"] = "CallExpression";
+    NodeType["BinaryExpression"] = "BinaryExpression";
+    NodeType["MemberExpression"] = "MemberExpression";
+    NodeType["FunctionExpression"] = "FunctionExpression";
+    NodeType["Literal"] = "Literal";
+    NodeType["ImportDeclaration"] = "ImportDeclaration";
+    NodeType["ImportSpecifier"] = "ImportSpecifier";
+    NodeType["ImportDefaultSpecifier"] = "ImportDefaultSpecifier";
+    NodeType["ImportNamespaceSpecifier"] = "ImportNamespaceSpecifier";
+    NodeType["ExportDeclaration"] = "ExportDeclaration";
+    NodeType["ExportSpecifier"] = "ExportSpecifier";
+    NodeType["ExportDefaultDeclaration"] = "ExportDefaultDeclaration";
+    NodeType["ExportNamedDeclaration"] = "ExportNamedDeclaration";
+    NodeType["ExportAllDeclaration"] = "ExportAllDeclaration";
+    NodeType["VariableDeclarator"] = "VariableDeclarator";
+})(NodeType = exports.NodeType || (exports.NodeType = {}));
+var FunctionType;
+(function (FunctionType) {
+    FunctionType[FunctionType["FunctionDeclaration"] = 0] = "FunctionDeclaration";
+    FunctionType[FunctionType["CallExpression"] = 1] = "CallExpression";
+})(FunctionType = exports.FunctionType || (exports.FunctionType = {}));
