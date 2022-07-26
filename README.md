@@ -8,6 +8,211 @@
 
 AST 解析器的开发，主要分为两个部分来进行: `词法分析器`和`语法分析器`。
 
+
+
+#### 类型定义：
+
+```ts
+export enum NodeType {
+  Program = "Program",
+  VariableDeclaration = "VariableDeclaration",
+  FunctionDeclaration = "FunctionDeclaration",
+  Identifier = "Identifier",
+  BlockStatement = "BlockStatement",
+  ExpressionStatement = "ExpressionStatement",
+  ReturnStatement = "ReturnStatement",
+  CallExpression = "CallExpression",
+  BinaryExpression = "BinaryExpression",
+  MemberExpression = "MemberExpression",
+  FunctionExpression = "FunctionExpression",
+  Literal = "Literal",
+  ImportDeclaration = "ImportDeclaration",
+  ImportSpecifier = "ImportSpecifier",
+  ImportDefaultSpecifier = "ImportDefaultSpecifier",
+  ImportNamespaceSpecifier = "ImportNamespaceSpecifier",
+  ExportDeclaration = "ExportDeclaration",
+  ExportSpecifier = "ExportSpecifier",
+  ExportDefaultDeclaration = "ExportDefaultDeclaration",
+  ExportNamedDeclaration = "ExportNamedDeclaration",
+  ExportAllDeclaration = "ExportAllDeclaration",
+  VariableDeclarator = "VariableDeclarator",
+}
+
+export enum FunctionType {
+  FunctionDeclaration,
+  CallExpression,
+}
+
+export interface Node {
+  type: string;
+  start: number;
+  end: number;
+}
+
+export interface Program extends Node {
+  type: NodeType.Program;
+  body: Statement[];
+}
+
+export interface Literal extends Node {
+  type: NodeType.Literal;
+  value: string;
+  raw: string;
+}
+
+export interface Identifier extends Node {
+  type: NodeType.Identifier;
+  name: string;
+}
+
+export interface CallExpression extends Node {
+  type: NodeType.CallExpression;
+  callee: Expression;
+  arguments: Expression[];
+}
+
+export interface MemberExpression extends Node {
+  type: NodeType.MemberExpression;
+  object: Identifier | MemberExpression;
+  property: Identifier;
+  computed: boolean;
+}
+
+export interface BlockStatement extends Node {
+  type: NodeType.BlockStatement;
+  body: Statement[];
+}
+
+export interface ExpressionStatement extends Node {
+  type: NodeType.ExpressionStatement;
+  expression: Expression;
+}
+
+export interface FunctionExpression extends FunctionNode {
+  type: NodeType.FunctionExpression;
+}
+
+export interface FunctionDeclaration extends FunctionNode {
+  type: NodeType.FunctionDeclaration;
+  id: Identifier | null;
+}
+
+export type VariableKind = "var" | "let" | "const";
+
+export interface VariableDeclarator extends Node {
+  type: NodeType.VariableDeclarator;
+  id: Identifier;
+  init: Expression | Literal | null;
+}
+
+export interface VariableDeclaration extends Node {
+  type: NodeType.VariableDeclaration;
+  kind: "var" | "let" | "const";
+  declarations: VariableDeclarator[];
+}
+
+export interface ImportSpecifier extends Node {
+  type: NodeType.ImportSpecifier;
+  imported: Identifier;
+  local: Identifier;
+}
+
+export interface ImportDefaultSpecifier extends Node {
+  type: NodeType.ImportDefaultSpecifier;
+  local: Identifier;
+}
+
+export interface ImportNamespaceSpecifier extends Node {
+  type: NodeType.ImportNamespaceSpecifier;
+  local: Identifier;
+}
+
+export type ImportSpecifiers =
+  | (ImportSpecifier | ImportDefaultSpecifier)[]
+  | ImportNamespaceSpecifier[];
+
+export interface ImportDeclaration extends Node {
+  type: NodeType.ImportDeclaration;
+  specifiers: ImportSpecifiers;
+  source: Literal;
+}
+
+export type Declaration =
+  | FunctionDeclaration
+  | VariableDeclaration
+  | ImportDeclaration
+  | ExportDeclaration
+  | VariableDeclarator;
+
+export interface ExportSpecifier extends Node {
+  type: NodeType.ExportSpecifier;
+  exported: Identifier;
+  local: Identifier;
+}
+
+export interface ExportNamedDeclaration extends Node {
+  type: NodeType.ExportNamedDeclaration;
+  declaration: Declaration | null;
+  specifiers: ExportSpecifier[];
+  source: Literal | null;
+}
+
+export interface ExportDefaultDeclaration extends Node {
+  type: NodeType.ExportDefaultDeclaration;
+  declaration: Declaration | Expression;
+}
+
+export interface ExportAllDeclaration extends Node {
+  type: NodeType.ExportAllDeclaration;
+  source: Literal;
+  exported: Identifier | null;
+}
+
+export type ExportDeclaration =
+  | ExportNamedDeclaration
+  | ExportDefaultDeclaration
+  | ExportAllDeclaration;
+
+export interface BinaryExpression extends Node {
+  type: NodeType.BinaryExpression;
+  left: Expression;
+  right: Expression;
+  operator: string;
+}
+export interface FunctionNode extends Node {
+  id: Identifier | null;
+  params: Expression[] | Identifier[];
+  body: BlockStatement;
+}
+
+export interface ReturnStatement extends Node {
+  type: NodeType.ReturnStatement;
+  argument: Expression;
+}
+
+export type Statement =
+  | ImportDeclaration
+  | ExportDeclaration
+  | VariableDeclaration
+  | FunctionDeclaration
+  | ExpressionStatement
+  | BlockStatement
+  | ReturnStatement;
+
+export type Expression =
+  | CallExpression
+  | MemberExpression
+  | Identifier
+  | Literal
+  | BinaryExpression
+  | FunctionExpression;
+
+```
+
+
+
+
+
 #### 词法分析器测试数据：
 
 ##### 测试组一(test expression)：
@@ -137,7 +342,7 @@ Output:
 
 
 
-##### 测试组四(test named import)：
+##### 测试组五(test named import)：
 
 Input:
 
@@ -168,7 +373,7 @@ Output:
 
 
 
-##### 测试组五(test default import)：
+##### 测试组六(test default import)：
 
 
 
@@ -199,7 +404,7 @@ Output:
 
 
 
-##### 测试组六(test namespace import)：
+##### 测试组七(test namespace import)：
 
 Input:
 
@@ -230,7 +435,7 @@ Output:
 
 
 
-##### 测试组七(test named export)：
+##### 测试组八(test named export)：
 
 Input:
 
@@ -253,7 +458,7 @@ Output:
 
 
 
-##### 测试组八(test reexport)：
+##### 测试组九(test reexport)：
 
 Input:
 
@@ -296,7 +501,7 @@ Output:
 
 
 
-##### 测试组九(test export default)：
+##### 测试组十(test export default)：
 
 Input:
 
@@ -324,7 +529,7 @@ Output:
 
 
 
-##### 测试组九(test export const/let/var)：
+##### 测试组十一(test export const/let/var)：
 
 Input:
 
@@ -383,8 +588,463 @@ Output:
 
 #### 语法分析器测试代码：
 
+##### 测试组一(test variable declaration)：
+
 ```ts
+test("test variable declaration", () => {
+    const input = "let a = 1;";
+    const ast = {
+      type: NodeType.Program,
+      start: 0,
+      end: 10,
+      body: [
+        {
+          type: NodeType.VariableDeclaration,
+          start: 0,
+          end: 10,
+          declarations: [
+            {
+              type: NodeType.VariableDeclarator,
+              id: {
+                type: NodeType.Identifier,
+                name: "a",
+                start: 4,
+                end: 5,
+              },
+              start: 4,
+              end: 9,
+              init: {
+                type: NodeType.Literal,
+                value: "1",
+                raw: "1",
+                start: 8,
+                end: 9,
+              },
+            },
+          ],
+          kind: "let",
+        },
+      ],
+    };
+    expect(parse(input)).toEqual(ast);
+  });
 ```
 
 
+
+##### 测试组二(test member expression)：
+
+Input:
+
+```ts
+test("test member expression", () => {
+    const input = "foo.bar";
+    const memberExpression: MemberExpression = {
+      type: NodeType.MemberExpression,
+      object: {
+        type: NodeType.Identifier,
+        name: "foo",
+        start: 0,
+        end: 3,
+      },
+      start: 0,
+      end: 7,
+      property: {
+        type: NodeType.Identifier,
+        name: "bar",
+        start: 4,
+        end: 7,
+      },
+      computed: false,
+    };
+    const ast: Program = {
+      type: NodeType.Program,
+      start: 0,
+      end: 7,
+      body: [
+        {
+          type: NodeType.ExpressionStatement,
+          expression: memberExpression,
+          start: 0,
+          end: 7,
+        },
+      ],
+    };
+
+    expect(parse(input)).toEqual(ast);
+  });
+```
+
+
+
+##### 测试组三(test nested member expression)：
+
+```ts
+test("test nested member expression", () => {
+    const input = "foo.bar.zoo";
+    const memberExpression: MemberExpression = {
+      type: NodeType.MemberExpression,
+      object: {
+        type: NodeType.MemberExpression,
+        object: {
+          start: 0,
+          end: 3,
+          type: NodeType.Identifier,
+          name: "foo",
+        },
+        property: {
+          start: 4,
+          end: 7,
+          type: NodeType.Identifier,
+          name: "bar",
+        },
+        start: 0,
+        end: 7,
+        computed: false,
+      },
+      property: {
+        start: 8,
+        end: 11,
+        type: NodeType.Identifier,
+        name: "zoo",
+      },
+      start: 0,
+      end: 11,
+      computed: false,
+    };
+    const ast: Program = {
+      type: NodeType.Program,
+      body: [
+        {
+          type: NodeType.ExpressionStatement,
+          expression: memberExpression,
+          start: 0,
+          end: 11,
+        },
+      ],
+      start: 0,
+      end: 11,
+    };
+
+    expect(parse(input)).toEqual(ast);
+  });
+```
+
+
+
+
+
+##### 测试组四(test function)：
+
+```ts
+test("test function", () => {
+    const input = "function foo(a, b) { return a.add(b); }";
+    const ast: Program = {
+      type: NodeType.Program,
+      start: 0,
+      end: 39,
+      body: [
+        {
+          start: 0,
+          end: 39,
+          type: NodeType.FunctionDeclaration,
+          id: {
+            start: 9,
+            end: 12,
+            type: NodeType.Identifier,
+            name: "foo",
+          },
+          params: [
+            {
+              start: 13,
+              end: 14,
+              type: NodeType.Identifier,
+              name: "a",
+            },
+            {
+              start: 16,
+              end: 17,
+              type: NodeType.Identifier,
+              name: "b",
+            },
+          ],
+          body: {
+            type: NodeType.BlockStatement,
+            start: 19,
+            end: 39,
+            body: [
+              {
+                type: NodeType.ReturnStatement,
+                start: 21,
+                end: 37,
+                argument: {
+                  type: NodeType.CallExpression,
+                  start: 28,
+                  end: 37,
+                  callee: {
+                    type: NodeType.MemberExpression,
+                    object: {
+                      type: NodeType.Identifier,
+                      name: "a",
+                      start: 28,
+                      end: 29,
+                    },
+                    property: {
+                      type: NodeType.Identifier,
+                      name: "add",
+                      start: 30,
+                      end: 33,
+                    },
+                    start: 28,
+                    end: 33,
+                    computed: false,
+                  },
+                  arguments: [
+                    {
+                      type: NodeType.Identifier,
+                      name: "b",
+                      start: 34,
+                      end: 35,
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ],
+    };
+    expect(parse(input)).toEqual(ast);
+  });
+```
+
+
+
+##### 测试组五(test import declaration)：
+
+```ts
+test("test import declaration", () => {
+    const input = `import foo, { name1, name2 as bar } from 'foo';
+      import * as mod from 'mod';`;
+    const ast: Program = {
+      type: NodeType.Program,
+      start: 0,
+      end: 80,
+      body: [
+        {
+          type: NodeType.ImportDeclaration,
+          start: 0,
+          end: 46,
+          specifiers: [
+            {
+              type: NodeType.ImportDefaultSpecifier,
+              start: 7,
+              end: 10,
+              local: {
+                type: NodeType.Identifier,
+                name: "foo",
+                start: 7,
+                end: 10,
+              },
+            },
+            {
+              type: NodeType.ImportSpecifier,
+              start: 14,
+              end: 19,
+              imported: {
+                type: NodeType.Identifier,
+                name: "name1",
+                start: 14,
+                end: 19,
+              },
+              local: {
+                type: NodeType.Identifier,
+                name: "name1",
+                start: 14,
+                end: 19,
+              },
+            },
+            {
+              type: NodeType.ImportSpecifier,
+              start: 21,
+              end: 33,
+              imported: {
+                type: NodeType.Identifier,
+                name: "name2",
+                start: 21,
+                end: 26,
+              },
+              local: {
+                type: NodeType.Identifier,
+                name: "bar",
+                start: 30,
+                end: 33,
+              },
+            },
+          ],
+          source: {
+            type: NodeType.Literal,
+            start: 41,
+            end: 46,
+            value: "foo",
+            raw: "'foo'",
+          },
+        },
+        {
+          type: NodeType.ImportDeclaration,
+          start: 54,
+          end: 80,
+          specifiers: [
+            {
+              type: NodeType.ImportNamespaceSpecifier,
+              start: 61,
+              end: 69,
+              local: {
+                type: NodeType.Identifier,
+                name: "mod",
+                start: 66,
+                end: 69,
+              },
+            },
+          ],
+          source: {
+            type: NodeType.Literal,
+            start: 75,
+            end: 80,
+            value: "mod",
+            raw: "'mod'",
+          },
+        },
+      ],
+    };
+    expect(parse(input)).toEqual(ast);
+  });
+```
+
+
+
+
+
+##### 测试组六(test export declaration)：
+
+```ts
+  test("test export declaration", () => {
+    let input = "export { foo, bar as ccc } from 'foo';";
+    let ast: Program = {
+      type: NodeType.Program,
+      start: 0,
+      end: 37,
+      body: [
+        {
+          type: NodeType.ExportNamedDeclaration,
+          start: 0,
+          end: 37,
+          declaration: null,
+          specifiers: [
+            {
+              type: NodeType.ExportSpecifier,
+              start: 9,
+              end: 12,
+              local: {
+                type: NodeType.Identifier,
+                name: "foo",
+                start: 9,
+                end: 12,
+              },
+              exported: {
+                type: NodeType.Identifier,
+                name: "foo",
+                start: 9,
+                end: 12,
+              },
+            },
+            {
+              type: NodeType.ExportSpecifier,
+              start: 14,
+              end: 24,
+              local: {
+                type: NodeType.Identifier,
+                name: "bar",
+                start: 14,
+                end: 17,
+              },
+              exported: {
+                type: NodeType.Identifier,
+                name: "ccc",
+                start: 21,
+                end: 24,
+              },
+            },
+          ],
+          source: {
+            type: NodeType.Literal,
+            start: 32,
+            end: 37,
+            value: "foo",
+            raw: "'foo'",
+          },
+        },
+      ],
+    };
+    expect(parse(input)).toEqual(ast);
+```
+
+
+
+```ts
+    input = "export * from 'foo';";
+    ast = {
+      type: NodeType.Program,
+      start: 0,
+      end: 19,
+      body: [
+        {
+          type: NodeType.ExportAllDeclaration,
+          start: 0,
+          end: 19,
+          source: {
+            type: NodeType.Literal,
+            start: 14,
+            end: 19,
+            value: "foo",
+            raw: "'foo'",
+          },
+          exported: null,
+        },
+      ],
+    };
+    expect(parse(input)).toEqual(ast);
+```
+
+
+
+```ts
+    input = "export default function() {}";
+    ast = {
+      type: NodeType.Program,
+      start: 0,
+      end: 28,
+      body: [
+        {
+          type: NodeType.ExportDefaultDeclaration,
+          start: 0,
+          end: 28,
+          declaration: {
+            type: NodeType.FunctionDeclaration,
+            start: 15,
+            end: 28,
+            id: null,
+            params: [],
+            body: {
+              type: NodeType.BlockStatement,
+              start: 26,
+              end: 28,
+              body: [],
+            },
+          },
+        },
+      ],
+    };
+    expect(parse(input)).toEqual(ast);
+```
 
